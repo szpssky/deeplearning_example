@@ -25,9 +25,9 @@ all_words = []
 for poetry in poetrys:
     all_words += [word for word in poetry]
 counter = collections.Counter(all_words)
-
+print(counter)
 count_pairs = sorted(counter.items(), key=lambda x: -x[1])
-# print(count_pairs)
+print(count_pairs)
 words, _ = zip(*count_pairs)
 # print('=====')
 # print(len(words))
@@ -148,7 +148,7 @@ def train_neural_network():
             if epoch % 7 == 0:
                 saver.save(sess, 'variables/poetry.module', global_step=epoch)
 
-train_neural_network()
+# train_neural_network()
 # def gen_poetry():
 #     def to_word(weights):
 #         t = np.cumsum(weights)

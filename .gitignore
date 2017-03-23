@@ -90,3 +90,14 @@ ENV/
 
 # macOS
 .DS_Store
+
+# inputdata
+*.conv
+*.pick
+test*
+train*
+# train_variables
+variables/
+
+# idea
+.idea/
