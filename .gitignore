@@ -94,6 +94,7 @@ ENV/
 # inputdata
 *.conv
 *.pick
+*.pickle
 test*
 train*
 # train_variables
