@@ -98,7 +98,6 @@ ENV/
 test*
 train*
 # train_variables
-variables/
 
 # idea
 .idea/
