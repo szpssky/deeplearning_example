@@ -33,7 +33,7 @@ with tf.name_scope('input_data'):
 with tf.name_scope('labels'):
     tf_train_labels = tf.placeholder(tf.float32, shape=(None, num_labels))
 
-
+global_step = tf.Variable(0,trainable=False)
 
 def accuracy(predictions, labels):
     return (100.0 * np.sum(np.argmax(predictions, axis=1) == np.argmax(labels, axis=1))
@@ -80,16 +80,14 @@ def cnn(data):
     # print("reshape", tf.reshape(pool2, [-1, 7 * 7 * 64]).shape)
     with tf.name_scope('fc_1'):
         fc_1 = tf.nn.relu(tf.matmul(tf.reshape(pool2, [-1, 7 * 7 * 64]), weights['w_fc1']) + biases['b_fc1'])
-        fc_1_dropout = tf.nn.dropout(fc_1,0.5)
 
     # print("fc1", fc_1.shape)
 
     with tf.name_scope('fc_2'):
-        fc_2 = tf.nn.relu(tf.matmul(fc_1_dropout, weights['w_fc2']) + biases['b_fc2'])
+        fc_2 = tf.nn.relu(tf.matmul(fc_1, weights['w_fc2']) + biases['b_fc2'])
+        fc_2_dropout = tf.nn.dropout(fc_2,0.9)
 
     # print("fc2", fc_2.shape)
-
-    fc_2_dropout = tf.nn.dropout(fc_2,0.5)
 
     with tf.name_scope('output'):
         output = tf.matmul(fc_2_dropout, weights['out']) + biases['b_out']
@@ -106,7 +104,13 @@ with tf.name_scope('loss'):
     tf.summary.scalar('loss', loss)
 
 with tf.name_scope('training'):
-    train_step = tf.train.AdamOptimizer().minimize(loss)
+    starter_learning_rate =0.05
+    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,1000, 0.96, staircase=True)
+    train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss,global_step=global_step)
+    tf.summary.scalar('learning rate',learning_rate)
+
+
+tf.summary.scalar('global step',global_step)
 
 
 # tvars = tf.trainable_variables()
