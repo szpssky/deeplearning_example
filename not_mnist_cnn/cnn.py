@@ -80,16 +80,19 @@ def cnn(data):
     # print("reshape", tf.reshape(pool2, [-1, 7 * 7 * 64]).shape)
     with tf.name_scope('fc_1'):
         fc_1 = tf.nn.relu(tf.matmul(tf.reshape(pool2, [-1, 7 * 7 * 64]), weights['w_fc1']) + biases['b_fc1'])
+        fc_1_dropout = tf.nn.dropout(fc_1,0.5)
 
     # print("fc1", fc_1.shape)
 
     with tf.name_scope('fc_2'):
-        fc_2 = tf.nn.relu(tf.matmul(fc_1, weights['w_fc2']) + biases['b_fc2'])
+        fc_2 = tf.nn.relu(tf.matmul(fc_1_dropout, weights['w_fc2']) + biases['b_fc2'])
 
     # print("fc2", fc_2.shape)
 
+    fc_2_dropout = tf.nn.dropout(fc_2,0.5)
+
     with tf.name_scope('output'):
-        output = tf.matmul(fc_2, weights['out']) + biases['b_out']
+        output = tf.matmul(fc_2_dropout, weights['out']) + biases['b_out']
 
     return output
 
@@ -97,9 +100,6 @@ def cnn(data):
 logits = cnn(tf_train_dataset)
 predict = tf.nn.softmax(logits)
 
-# print(tf_train_dataset.shape)
-# print(tf_train_labels.shape)
-# print(logits.shape)
 
 with tf.name_scope('loss'):
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=tf_train_labels, logits=logits))
@@ -131,9 +131,9 @@ def train():
         merged = tf.summary.merge_all()
         train_writer = tf.summary.FileWriter('log' + '/train', sess.graph)
 
-        epoch = 0
+        Iterator = 0
         while True:
-            offset = (epoch * batch_size) % (train_labels.shape[0] - batch_size)
+            offset = (Iterator * batch_size) % (train_labels.shape[0] - batch_size)
 
             batch_data = train_dataset[offset:(offset + batch_size), :, :, :]
             batch_labels = train_labels[offset:(offset + batch_size), :]
@@ -141,15 +141,15 @@ def train():
             _, l, prediction, summary = sess.run([train_step, loss, predict, merged],
                                                  feed_dict={tf_train_dataset: batch_data,
                                                             tf_train_labels: batch_labels})
-            train_writer.add_summary(summary, epoch)
+            train_writer.add_summary(summary, Iterator)
 
-            epoch += 1
-            if epoch % 1000 == 0:
+            Iterator += 1
+            if Iterator % 1000 == 0:
                 print("save variables")
-                saver.save(sess, 'variables/poetry.module', global_step=epoch)
+                saver.save(sess, 'variables/poetry.module', global_step=Iterator)
 
-            if epoch % 1000 == 0:
-                print("Epoch:", epoch)
+            if Iterator % 1000 == 0:
+                print("Iterator:", Iterator)
                 print("loss:", l)
                 print('Test accuracy: %.1f%%' % accuracy(predict.eval({tf_train_dataset: test_dataset}), test_labels))
                 print("===================================================")
