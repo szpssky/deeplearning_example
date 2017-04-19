@@ -109,7 +109,7 @@ with tf.name_scope('loss'):
     tf.summary.scalar('loss', loss)
 
 with tf.name_scope('training'):
-    starter_learning_rate = 0.05
+    starter_learning_rate = 0.001
     learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 10000, 0.96, staircase=True)
     train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
