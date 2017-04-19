@@ -113,8 +113,8 @@ with tf.name_scope('training'):
     learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 10000, 0.96, staircase=True)
     train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
 
-    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(predict, 1), tf.argmax(tf_train_labels, 1)), tf.float32))
-    tf.summary.scalar('Train Accuary', accuracy)
+    acc = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(predict, 1), tf.argmax(tf_train_labels, 1)), tf.float32))
+    tf.summary.scalar('Train Accuary', acc)
 
 
 # tvars = tf.trainable_variables()
@@ -157,7 +157,7 @@ def train():
                 print("save variables")
                 saver.save(sess, 'variables/poetry.module', global_step=Iterator)
 
-            if Iterator % 10000 == 0:
+            if Iterator % 1000 == 0:
                 print("Iterator:", Iterator)
                 print("loss:", l)
                 print('Test accuracy: %.1f%%' % accuracy(predict.eval({tf_train_dataset: test_dataset}), test_labels))
