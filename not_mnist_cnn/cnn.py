@@ -101,7 +101,7 @@ predict = tf.nn.softmax(logits)
 
 with tf.name_scope('loss'):
     loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=tf_train_labels, logits=logits))
-    loss = loss + 0.01 * (
+    loss = loss + 0.000001 * (
         tf.nn.l2_loss(weights['w_fc1']) + tf.nn.l2_loss(weights['w_fc2']) + tf.nn.l2_loss(
             biases['b_fc1'] + tf.nn.l2_loss(biases['b_fc2'])) + tf.nn.l2_loss(weights['out']) + tf.nn.l2_loss(
             biases['b_out']))
@@ -110,15 +110,18 @@ with tf.name_scope('loss'):
 
 with tf.name_scope('training'):
     starter_learning_rate = 0.05
-    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 1000, 0.96, staircase=True)
+    learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 10000, 0.96, staircase=True)
     train_step = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
-    tf.summary.scalar('learning rate', learning_rate)
+
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(predict, 1), tf.argmax(tf_train_labels, 1)), tf.float32))
+    tf.summary.scalar('Train Accuary', accuracy)
 
 
 # tvars = tf.trainable_variables()
 # grads, _ = tf.clip_by_global_norm(tf.gradients(loss, tvars), 5)
 # optimizer = tf.train.AdamOptimizer()
 # train_op = optimizer.apply_gradients(zip(grads, tvars))
+
 
 
 def train():
@@ -154,7 +157,7 @@ def train():
                 print("save variables")
                 saver.save(sess, 'variables/poetry.module', global_step=Iterator)
 
-            if Iterator % 1000 == 0:
+            if Iterator % 10000 == 0:
                 print("Iterator:", Iterator)
                 print("loss:", l)
                 print('Test accuracy: %.1f%%' % accuracy(predict.eval({tf_train_dataset: test_dataset}), test_labels))
