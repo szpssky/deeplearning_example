@@ -98,6 +98,11 @@ ENV/
 test*
 train*
 # train_variables
+*variables/
+*inception_v1
 
 # idea
 .idea/
+
+# tmp
+tmp/
