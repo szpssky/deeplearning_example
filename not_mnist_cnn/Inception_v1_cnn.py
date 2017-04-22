@@ -3,9 +3,8 @@ import tensorflow.contrib.slim.nets as nets
 import pickle
 import numpy as np
 import os
-from datasets import flowers
-from not_mnist_cnn.preprocessing import inception_preprocessing
-from not_mnist_cnn import notMNIST
+from preprocessing import inception_preprocessing
+import notMNIST
 
 def load_batch(dataset, batch_size=32, height=299, width=299, is_training=False):
     """Loads a single batch of data.
@@ -29,7 +28,6 @@ def load_batch(dataset, batch_size=32, height=299, width=299, is_training=False)
 
     # Preprocess image for usage by Inception.
     image = inception_preprocessing.preprocess_image(image_raw, height, width, is_training=is_training)
-    print(image)
     # Preprocess the image for display purposes.
     image_raw = tf.expand_dims(image_raw, 0)
     image_raw = tf.image.resize_images(image_raw, [height, width])
@@ -41,24 +39,13 @@ def load_batch(dataset, batch_size=32, height=299, width=299, is_training=False)
         batch_size=batch_size,
         num_threads=1,
         capacity=200000)
-    print("====")
 
     return images, images_raw, labels
 
 
 slim = tf.contrib.slim
-with open('notMNIST.pickle', 'rb') as f:
-    save = pickle.load(f)
-    train_dataset = save['train_dataset']
-    train_labels = save['train_labels']
-    test_dataset = save['test_dataset']
-    test_labels = save['test_labels']
 
-
-batch_size = 16
-num_labels = 10
 image_size = nets.inception.inception_v1.default_image_size
-num_channnels = 1
 train_log_dir = './variables/'
 
 
@@ -95,15 +82,17 @@ with tf.Graph().as_default():
     with slim.arg_scope(nets.inception.inception_v1_arg_scope()):
         predictions, _ = nets.inception.inception_v1(images, dataset.num_classes, is_training=True)
 
+
     loss = slim.losses.softmax_cross_entropy(predictions, one_hot_labels)
 
     total_loss = slim.losses.get_total_loss()
     tf.summary.scalar('losses/total_loss', total_loss)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.01)
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.001)
     train_op = slim.learning.create_train_op(total_loss, optimizer)
 
     final_loss = slim.learning.train(
         train_op,
         logdir=train_log_dir,
         save_summaries_secs=10)
+

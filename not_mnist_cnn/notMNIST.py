@@ -20,7 +20,7 @@ tensorflow/models/slim/datasets/download_and_convert_flowers.py
 import os
 import tensorflow as tf
 
-from datasets import dataset_utils
+import dataset_utils
 
 slim = tf.contrib.slim
 
